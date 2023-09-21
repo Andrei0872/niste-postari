@@ -3,28 +3,23 @@ import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useEffect, useState } from 'react'
-
-const inter = Inter({ subsets: ['latin'] })
-
-interface Post {
-  userId: number;
-  id: number;
-  title: string;
-  body: string;
-}
-
-const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts';
-const fetchPosts = (): Promise<Post[]> => {
-  return fetch(POSTS_URL) 
-    .then(r => r.json())
-}
+import { Post, fetchPosts } from '../api/post'
+import { redirect } from 'next/navigation'
+import { useRouter } from 'next/router'
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[] | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     fetchPosts()
-      .then(posts => setPosts(posts));
+      .then(posts => setPosts(posts))
+      .catch(err => {
+        if (err?.statusCode === 401) {
+          router.replace('/auth');
+        }
+      });
   }, []);
 
   console.log(posts);
