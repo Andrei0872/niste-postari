@@ -1,5 +1,10 @@
+import { Logger } from '@nestjs/common';
 import * as redis from 'redis'
 import { config } from 'src/config';
+
+const LOGGER_CONTEXT = 'REDIS';
+
+const logger = new Logger(LOGGER_CONTEXT);
 
 export const redisClient = redis.createClient({
   port: 6379,
@@ -7,9 +12,9 @@ export const redisClient = redis.createClient({
 });
 
 redisClient.on('connect', () => {
-  console.log('Redis connected!');
+  logger.log('Redis connected!');
 });
 
 redisClient.on('error', err => {
-  console.log('Redis error: ', err.message);
+  logger.error('Redis error: ', err.message);
 });
