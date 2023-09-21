@@ -6,7 +6,7 @@ import { User } from './user.model';
 
 const TABLE_NAME = `"user"`;
 
-const logger = new Logger('USER');
+const logger = new Logger('user.service');
 
 @Injectable()
 export class UserService {
