@@ -7,6 +7,8 @@ import { UserService } from 'src/entities/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from './config';
 import { PublicUser, UserCookieData } from 'src/entities/user/user.model';
+import { LoginUserDTO } from 'src/entities/user/dtos/login-user.dto';
+import { InvalidCredentialsError } from './errors/invalid-credentials.error';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,20 @@ export class AuthService {
     } catch (err) {
       throw new Error('An error occurred while registering the user.');
     }
+  }
+
+  public async login(loginUserDTO: LoginUserDTO) {
+    const user = await this.userService.getOneByUsername(loginUserDTO.username);
+    if (!user) {
+      throw new InvalidCredentialsError();
+    }
+
+    const doPasswordsMatch = await bcrypt.compare(loginUserDTO.password, user.password);
+    if (!doPasswordsMatch) {
+      throw new InvalidCredentialsError();
+    }
+
+    return user;
   }
 
   public getUserCookieFields(u: PublicUser): UserCookieData {

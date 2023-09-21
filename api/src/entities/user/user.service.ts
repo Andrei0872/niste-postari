@@ -35,4 +35,23 @@ export class UserService {
     }
   }
 
+  async getOneByUsername(username: string): Promise<User> {
+    const sqlStr = `
+      select
+        id,
+        username,
+        password
+      from "user" u
+      where u.username = $1;
+    `;
+    const values = [username];
+
+    const client = await this.pool.connect();
+    try {
+      const res = await client.query(sqlStr, values);
+      return res.rows[0];
+    } finally {
+      client.release();
+    }
+  }
 }

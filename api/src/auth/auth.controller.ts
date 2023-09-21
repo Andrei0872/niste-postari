@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterUserDTO } from 'src/entities/user/dtos/register-user.dto';
 import { getPublicUser } from 'src/entities/user/user.model';
 import { Response, Request } from 'express';
+import { LoginUserDTO } from 'src/entities/user/dtos/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,4 +27,21 @@ export class AuthController {
     }
   }
 
+  @Post('login')
+  async login(@Body() loginUserDTO: LoginUserDTO, @Res() res: Response, @Req() req: Request) {
+    try {
+      const user = await this.authService.login(loginUserDTO);
+
+      (req as any).session.user = this.authService.getUserCookieFields(user);
+
+      return res
+        .status(HttpStatus.CREATED)
+        .json({
+          data: getPublicUser(user),
+          message: 'User logged in successfully.'
+        })
+    } catch (err) {
+      throw new HttpException(err.message, 400);
+    }
+  }
 }
