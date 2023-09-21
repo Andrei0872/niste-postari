@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Pool } from 'pg';
 import { PG_PROVIDER_TOKEN } from 'src/db/db.module';
-import { CreatePostData } from './post.model';
+import { CreatePostData, GetAllPostsQueryParams } from './post.model';
 
 const logger = new Logger('post.service');
 
@@ -9,23 +9,38 @@ const logger = new Logger('post.service');
 export class PostService {
   constructor(@Inject(PG_PROVIDER_TOKEN) private pool: Pool) { }
 
-  async getAll() {
+  // TODO: this logic here really needs to be tested :).
+  async getAll(opts: GetAllPostsQueryParams) {
+    const query = `
+      select
+        p.id "postId",
+        title,
+        body,
+        image_url "imageUrl",
+        u.username,
+        u.id "posterId"
+      from post p
+      join "user" u
+        on p.poster_id = u.id
+      ${
+        opts.last_saw_id
+          ? `where p.id > $2`
+          : ''
+      }
+      order by p.id asc
+      limit $1
+    `;
+    const values = [
+      opts.per_page || 15,
+    ];
+
+    if (opts.last_saw_id) {
+      values.push(opts.last_saw_id);
+    }
+
     const client = await this.pool.connect();
     try {
-      const res = await client.query(
-        `
-          select
-            p.id "postId",
-            title,
-            body,
-            image_url "imageUrl",
-            u.username,
-            u.id "posterId"
-          from post p
-          join "user" u
-            on p.poster_id = u.id
-        `,
-      );
+      const res = await client.query(query, values);
 
       return res.rows;
     } catch (err) {
@@ -52,7 +67,7 @@ export class PostService {
     const client = await this.pool.connect();
     try {
       const res = await client.query(query, values);
-      
+
       return res.rows[0];
     } catch (err) {
       logger.error(err.message);

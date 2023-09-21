@@ -7,3 +7,11 @@ export interface Post {
 }
 
 export type CreatePostData = Omit<Post, 'id'>;
+
+
+export interface GetAllPostsQueryParams {
+  // TODO: might use a pipe do directly convert them
+  // into numbers.
+  per_page?: string;
+  last_saw_id?: string;
+}
