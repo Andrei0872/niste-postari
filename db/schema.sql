@@ -4,7 +4,7 @@ create table "user" (
   password varchar(65) not null
 );
 
-create table posts (
+create table post (
   id serial primary key,
   title varchar(100) not null,
   body text not null,
